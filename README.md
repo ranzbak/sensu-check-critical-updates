@@ -1,3 +1,8 @@
+[![Sensu Bonsai Asset](https://img.shields.io/badge/Bonsai-Download%20Me-brightgreen.svg?colorB=89C967&logo=sensu)](https://bonsai.sensu.io/assets/BrianInAz/sensu-reboot-required-check)
+![Go Test](https://github.com/BrianInAz/sensu-reboot-required-check/workflows/Go%20Test/badge.svg)
+![goreleaser](https://github.com/BrianInAz/sensu-reboot-required-check/workflows/goreleaser/badge.svg)
+
+
 # Sensu Reboot Required Check
 
 ## Table of Contents
