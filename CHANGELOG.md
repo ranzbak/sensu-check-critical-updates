@@ -10,3 +10,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 ## [0.0.1] - 2020-10-10
 ### Added
 - Initial release
+
+## [0.1.0] - 2020-11-18
+### Added
+- Added to GitHub and Bonsai
