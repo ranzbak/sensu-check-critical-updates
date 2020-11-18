@@ -13,7 +13,7 @@
 
 ## Overview
 
-The Sensu Reboot Required Check is a [Sensu Check][6] that ...
+The Sensu Reboot Required Check is a [Sensu Check][6] that looks for the reboot-required file on Ubuntu systems indicating a reboot is required.
 
 ## Files
 
