@@ -12,27 +12,27 @@ import (
 // Config represents the check plugin config.
 type Config struct {
 	sensu.PluginConfig
-	rebootFile string
+	filePath string
 }
 
 var (
 	plugin = Config{
 		PluginConfig: sensu.PluginConfig{
-			Name:     "sensu-reboot-required-check",
-			Short:    "Check OS to see if reboots are pending",
-			Keyspace: "sensu.io/plugins/sensu-reboot-required-check/config",
+			Name:     "sensu-check-file-exists",
+			Short:    "Check OS to see if specified file exists",
+			Keyspace: "sensu.io/plugins/sensu-check-file-exists/config",
 		},
 	}
 
 	options = []*sensu.PluginConfigOption{
 		&sensu.PluginConfigOption{
-			Path:      "reboot-file",
-			Env:       "REBOOT_FILE",
-			Argument:  "reboot-file",
-			Shorthand: "r",
+			Path:      "file-path",
+			Env:       "FILE_PATH",
+			Argument:  "file-path",
+			Shorthand: "f",
 			Default:   "/var/run/reboot-required",
-			Usage:     "location of file indicating reboot is required.",
-			Value:     &plugin.rebootFile,
+			Usage:     "location of file is required.",
+			Value:     &plugin.filePath,
 		},
 	}
 )
@@ -56,15 +56,15 @@ func checkArgs(event *types.Event) (int, error) {
 
 func executeCheck(event *types.Event) (int, error) {
 
-	if fileExists(plugin.rebootFile) {
+	if fileExists(plugin.filePath) {
 		//If the file exists, OS is indicating reboot required. Return Warning.
 		//Maybe also return list of packages?
 
-		fmt.Printf("%s WARNING: %v found. Reboot required.\n", plugin.PluginConfig.Name, plugin.rebootFile)
+		fmt.Printf("%s WARNING: %v found. Reboot required.\n", plugin.PluginConfig.Name, plugin.filePath)
 		return sensu.CheckStateWarning, nil
 	} else {
 		//File does not exist. OS is NOT indicating reboot required. Return OK
-		fmt.Printf("%s OK: %v NOT found. No reboot required.\n", plugin.PluginConfig.Name, plugin.rebootFile)
+		fmt.Printf("%s OK: %v NOT found. No reboot required.\n", plugin.PluginConfig.Name, plugin.filePath)
 		return sensu.CheckStateOK, nil
 	}
 
@@ -73,9 +73,9 @@ func executeCheck(event *types.Event) (int, error) {
 // fileExists checks if a file exists (...and is not a directory)
 // Borrowed from: https://golangcode.com/check-if-a-file-exists/
 func fileExists(filename string) bool {
-    info, err := os.Stat(filename)
-    if os.IsNotExist(err) {
-        return false
-    }
-    return !info.IsDir()
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
