@@ -1,4 +1,4 @@
-module github.com/BrianInAz/sensu-reboot-required-check
+module github.com/BrianInAz/sensu-check-file-exists
 
 go 1.13
 

@@ -60,11 +60,11 @@ func executeCheck(event *types.Event) (int, error) {
 		//If the file exists, OS is indicating reboot required. Return Warning.
 		//Maybe also return list of packages?
 
-		fmt.Printf("%s WARNING: %v found. Reboot required.\n", plugin.PluginConfig.Name, plugin.filePath)
+		fmt.Printf("%s WARNING: %v found.\n", plugin.PluginConfig.Name, plugin.filePath)
 		return sensu.CheckStateWarning, nil
 	} else {
 		//File does not exist. OS is NOT indicating reboot required. Return OK
-		fmt.Printf("%s OK: %v NOT found. No reboot required.\n", plugin.PluginConfig.Name, plugin.filePath)
+		fmt.Printf("%s OK: %v NOT found.\n", plugin.PluginConfig.Name, plugin.filePath)
 		return sensu.CheckStateOK, nil
 	}
 

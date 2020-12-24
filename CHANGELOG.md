@@ -18,3 +18,8 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 ## [0.1.1] - 2020-11-18
 ### Added
 - Removed references to other OS in bonsai.yml file
+
+## [0.1.2] - 2020-12-23
+### Added
+- Changed to find any file.
+- Changed name.
