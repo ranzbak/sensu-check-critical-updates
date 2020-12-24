@@ -1,9 +1,9 @@
-[![Sensu Bonsai Asset](https://img.shields.io/badge/Bonsai-Download%20Me-brightgreen.svg?colorB=89C967&logo=sensu)](https://bonsai.sensu.io/assets/BrianInAz/sensu-reboot-required-check)
-![Go Test](https://github.com/BrianInAz/sensu-reboot-required-check/workflows/Go%20Test/badge.svg)
-![goreleaser](https://github.com/BrianInAz/sensu-reboot-required-check/workflows/goreleaser/badge.svg)
+[![Sensu Bonsai Asset](https://img.shields.io/badge/Bonsai-Download%20Me-brightgreen.svg?colorB=89C967&logo=sensu)](https://bonsai.sensu.io/assets/BrianInAz/sensu-check-file-exists)
+![Go Test](https://github.com/BrianInAz/sensu-check-file-exists/workflows/Go%20Test/badge.svg)
+![goreleaser](https://github.com/BrianInAz/sensu-check-file-exists/workflows/goreleaser/badge.svg)
 
 
-# Sensu Reboot Required Check
+# Sensu Check File Exists
 
 ## Table of Contents
 - [Overview](#overview)
@@ -18,7 +18,7 @@
 
 ## Overview
 
-The Sensu Reboot Required Check is a [Sensu Check][6] that looks for the reboot-required file on Ubuntu systems indicating a reboot is required.
+The Sensu Check File Exists is a [Sensu Check][6] that looks for the specified file.
 
 ## Files
 
@@ -33,10 +33,10 @@ consider doing so! If you're using sensuctl 5.13 with Sensu Backend 5.13 or late
 following command to add the asset:
 
 ```
-sensuctl asset add BrianInAz/sensu-reboot-required-check
+sensuctl asset add BrianInAz/sensu-check-file-exists
 ```
 
-If you're using an earlier version of sensuctl, you can find the asset on the [Bonsai Asset Index][https://bonsai.sensu.io/assets/BrianInAz/sensu-reboot-required-check].
+If you're using an earlier version of sensuctl, you can find the asset on the [Bonsai Asset Index][https://bonsai.sensu.io/assets/BrianInAz/sensu-check-file-exists].
 
 ### Check definition
 
@@ -45,14 +45,14 @@ If you're using an earlier version of sensuctl, you can find the asset on the [B
 type: CheckConfig
 api_version: core/v2
 metadata:
-  name: sensu-reboot-required-check
+  name: sensu-check-file-exists
   namespace: default
 spec:
-  command: sensu-reboot-required-check --example example_arg
+  command: sensu-check-file-exists --example example_arg
   subscriptions:
   - system
   runtime_assets:
-  - BrianInAz/sensu-reboot-required-check
+  - BrianInAz/sensu-check-file-exists
 ```
 
 ## Installation from source
@@ -61,7 +61,7 @@ The preferred way of installing and deploying this plugin is to use it as an Ass
 like to compile and install the plugin from source or contribute to it, download the latest version
 or create an executable script from this source.
 
-From the local path of the sensu-reboot-required-check repository:
+From the local path of the sensu-check-file-exists repository:
 
 ```
 go build
