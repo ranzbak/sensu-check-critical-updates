@@ -45,7 +45,6 @@ var (
 	}
 )
 
-
 func main() {
 	check := sensu.NewGoCheck(&plugin.PluginConfig, options, checkArgs, executeCheck, false)
 	check.Execute()
@@ -97,9 +96,15 @@ func executeCheck(event *types.Event) (int, error) {
 		return 0, errors.New(fmt.Sprintf("OS %s not supported", osRelease))
 	}
 
-	if checkErr == nil {
+	if num_crit == 0 {
 		//File does not exist. OS is NOT indicating reboot required. Return OK
 		fmt.Printf("%s OK: patches %d security %d critical %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit)
+		return sensu.CheckStateOK, nil
+	} else if num_crit > 10 {
+		fmt.Printf("%s CRITICAL: patches %d security %d critical %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit)
+		return sensu.CheckStateOK, nil
+	} else if num_crit != 0 {
+		fmt.Printf("%s WARNING: patches %d security %d critical %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit)
 		return sensu.CheckStateOK, nil
 	} else {
 		//If the file exists, OS is indicating reboot required. Return Warning.
