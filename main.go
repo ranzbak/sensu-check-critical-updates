@@ -1,13 +1,21 @@
 package main
 
 import (
+	//"bufio"
 	"fmt"
-	// "log"
-	"os"
+	//"os"
+	"errors"
+
+	redhat "gitlab.esa.int/esait/sensu-check-critical-updates/redhat"
+	ubuntu "gitlab.esa.int/esait/sensu-check-critical-updates/ubuntu"
 
 	"github.com/sensu-community/sensu-plugin-sdk/sensu"
 	"github.com/sensu/sensu-go/types"
+	"gopkg.in/ini.v1"
 )
+
+// Prefered shell for command line execution
+const ShellToUse = "bash"
 
 // Config represents the check plugin config.
 type Config struct {
@@ -18,9 +26,9 @@ type Config struct {
 var (
 	plugin = Config{
 		PluginConfig: sensu.PluginConfig{
-			Name:     "sensu-check-file-exists",
+			Name:     "sensu-check-critical-updates",
 			Short:    "Check OS to see if specified file exists",
-			Keyspace: "sensu.io/plugins/sensu-check-file-exists/config",
+			Keyspace: "sensu.io/plugins/sensu-check-critical-updates/config",
 		},
 	}
 
@@ -37,9 +45,25 @@ var (
 	}
 )
 
+
 func main() {
 	check := sensu.NewGoCheck(&plugin.PluginConfig, options, checkArgs, executeCheck, false)
 	check.Execute()
+}
+
+// Retrieve the OS family of the current Linux distribution
+// Returns: string: ID, string: ID_LIKE, error
+func getOSRelease() (string, string, error) {
+	cfg, err := ini.Load("/etc/os-release")
+	if err != nil {
+		return "", "", err
+	}
+
+	osId := cfg.Section("").Key("ID").String()
+	osLike := cfg.Section("").Key("ID_LIKE").String()
+	//fmt.Println("OS-LIKE", osLike)
+
+	return osId, osLike, nil
 }
 
 func checkArgs(event *types.Event) (int, error) {
@@ -55,27 +79,34 @@ func checkArgs(event *types.Event) (int, error) {
 }
 
 func executeCheck(event *types.Event) (int, error) {
+	osId, osRelease, err := getOSRelease()
 
-	if fileExists(plugin.filePath) {
+	if err != nil {
+		return 0, err
+	}
+
+	var checkErr error = nil
+	var num_patch = 0
+	var num_sec = 0
+	var num_crit = 0
+	if osRelease == "ubuntu" {
+		num_patch,num_sec,num_crit,checkErr = ubuntu.CheckPatch()
+	} else if osId == "rhel" {
+		num_patch,num_sec,num_crit,checkErr = redhat.CheckPatch()
+	} else {
+		return 0, errors.New(fmt.Sprintf("OS %s not supported", osRelease))
+	}
+
+	if checkErr == nil {
+		//File does not exist. OS is NOT indicating reboot required. Return OK
+		fmt.Printf("%s OK: patches %d security %d critical %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit)
+		return sensu.CheckStateOK, nil
+	} else {
 		//If the file exists, OS is indicating reboot required. Return Warning.
 		//Maybe also return list of packages?
 
-		fmt.Printf("%s WARNING: %v found.\n", plugin.PluginConfig.Name, plugin.filePath)
+		//fmt.Printf("%s WARNING: %v found.\n", plugin.PluginConfig.Name, plugin.filePath)
+		fmt.Printf("%s WARNING: %s\n", plugin.PluginConfig.Name, checkErr)
 		return sensu.CheckStateWarning, nil
-	} else {
-		//File does not exist. OS is NOT indicating reboot required. Return OK
-		fmt.Printf("%s OK: %v NOT found.\n", plugin.PluginConfig.Name, plugin.filePath)
-		return sensu.CheckStateOK, nil
 	}
-
-}
-
-// fileExists checks if a file exists (...and is not a directory)
-// Borrowed from: https://golangcode.com/check-if-a-file-exists/
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return !info.IsDir()
 }

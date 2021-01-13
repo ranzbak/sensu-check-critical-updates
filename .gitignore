@@ -4,7 +4,7 @@
 *.dll
 *.so
 *.dylib
-sensu-reboot-required-check
+sensu-check-critical-updates
 
 # Test binary, build with `go test -c`
 *.test
