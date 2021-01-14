@@ -1,6 +1,7 @@
 # Sensu Check Critical Updates
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Files](#files)
 - [Usage examples](#usage-examples)
@@ -17,6 +18,8 @@ The Sensu Check File Exists is a [Sensu Check][6] that looks for the specified f
 This Sensu Check Critical Updates, checks if there are critical updates waiting to be installed.
 On Redhat and Centos the eretra data is used, to determine if critical patches are waiting.
 Ubuntu does not have such metadata, and the Apt tools don't provide scalable ways of implementing a severity check.
+
+Because of limitations in CentOS and Ubuntu **security patches are only reported for RedHat Linux**
 
 ## Files
 
@@ -51,9 +54,9 @@ metadata:
 spec:
   command: sensu-check-critical-updates
   subscriptions:
-  - system
+    - system
   runtime_assets:
-  - ranzbak/sensu-check-critical-updates
+    - ranzbak/sensu-check-critical-updates
 ```
 
 ## Installation from source
