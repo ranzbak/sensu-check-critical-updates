@@ -78,7 +78,7 @@ func executeCheck(event *types.Event) (int, error) {
 		return 0, err
 	}
 
-	var sev int 
+	var sev int
 	var checkErr error
 	var num_patch int
 	var num_sec int
