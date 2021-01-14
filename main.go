@@ -3,9 +3,14 @@ package main
 import (
 	"fmt"
 
-	redhat "gitlab.esa.int/esait/sensu-check-critical-updates/redhat"
-	ubuntu "gitlab.esa.int/esait/sensu-check-critical-updates/ubuntu"
+	// Check Patches pending
+	redhat  "gitlab.esa.int/esait/sensu-check-critical-updates/redhat"
+	ubuntu  "gitlab.esa.int/esait/sensu-check-critical-updates/ubuntu"
 
+	// Check how long the patches are pending
+	pending  "gitlab.esa.int/esait/sensu-check-critical-updates/pendingtime"
+
+	// Normal inports
 	"github.com/sensu-community/sensu-plugin-sdk/sensu"
 	"github.com/sensu/sensu-go/types"
 	"gopkg.in/ini.v1"
@@ -132,7 +137,7 @@ func executeCheck(event *types.Event) (int, error) {
 	}
 
 	// Check if patches have been outstanding for too long
-	patchStat, lastPatch, err := PendingTime(plugin.patchFilePath, num_patch, plugin.daysSincePatchWarn, plugin.daysSincePatchCrit)
+	patchStat, lastPatch, err := pending.PendingTime(plugin.patchFilePath, num_patch, plugin.daysSincePatchWarn, plugin.daysSincePatchCrit)
 	if err != nil {
 		fmt.Println("Pending file failed:", err)
 		sev = sensu.CheckStateWarning
