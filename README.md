@@ -1,4 +1,4 @@
-# Sensu Check File Exists
+# Sensu Check Critical Updates
 
 ## Table of Contents
 - [Overview](#overview)
@@ -14,6 +14,9 @@
 ## Overview
 
 The Sensu Check File Exists is a [Sensu Check][6] that looks for the specified file.
+This Sensu Check Critical Updates, checks if there are critical updates waiting to be installed.
+On Redhat and Centos the eretra data is used, to determine if critical patches are waiting.
+Ubuntu does not have such metadata, and the Apt tools don't provide scalable ways of implementing a severity check.
 
 ## Files
 
@@ -28,10 +31,10 @@ consider doing so! If you're using sensuctl 5.13 with Sensu Backend 5.13 or late
 following command to add the asset:
 
 ```
-sensuctl asset add BrianInAz/sensu-check-critical-updates
+sensuctl asset add ranzbak/sensu-check-critical-updates
 ```
 
-If you're using an earlier version of sensuctl, you can find the asset on the [Bonsai Asset Index][https://bonsai.sensu.io/assets/BrianInAz/sensu-check-critical-updates].
+If you're using an earlier version of sensuctl, you can find the asset on the [Bonsai Asset Index][https://bonsai.sensu.io/assets/phonig/sensu-check-critical-updates].
 
 ### Check definition
 
@@ -43,11 +46,11 @@ metadata:
   name: sensu-check-critical-updates
   namespace: default
 spec:
-  command: sensu-check-critical-updates --example example_arg
+  command: sensu-check-critical-updates
   subscriptions:
   - system
   runtime_assets:
-  - BrianInAz/sensu-check-critical-updates
+  - ranzbak/sensu-check-critical-updates
 ```
 
 ## Installation from source

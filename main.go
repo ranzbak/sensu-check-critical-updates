@@ -84,34 +84,35 @@ func executeCheck(event *types.Event) (int, error) {
 		return 0, err
 	}
 
+	var sev int = sensu.CheckStateUnknown
 	var checkErr error = nil
 	var num_patch = 0
 	var num_sec = 0
 	var num_crit = 0
 	if osRelease == "ubuntu" {
-		num_patch,num_sec,num_crit,checkErr = ubuntu.CheckPatch()
+		sev, num_patch,num_sec,num_crit,checkErr = ubuntu.CheckPatch()
 	} else if osId == "rhel" {
-		num_patch,num_sec,num_crit,checkErr = redhat.CheckPatch()
+		sev, num_patch,num_sec,num_crit,checkErr = redhat.CheckPatch()
 	} else {
 		return 0, errors.New(fmt.Sprintf("OS %s not supported", osRelease))
 	}
 
-	if num_crit == 0 {
+	if sev == sensu.CheckStateOK {
 		//File does not exist. OS is NOT indicating reboot required. Return OK
 		fmt.Printf("%s OK: patches %d security %d critical %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit)
 		return sensu.CheckStateOK, nil
-	} else if num_crit > 10 {
-		fmt.Printf("%s CRITICAL: patches %d security %d critical %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit)
-		return sensu.CheckStateOK, nil
-	} else if num_crit != 0 {
+	} else if sev == sensu.CheckStateWarning {
 		fmt.Printf("%s WARNING: patches %d security %d critical %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit)
-		return sensu.CheckStateOK, nil
+		return sensu.CheckStateWarning, nil
+	} else if sev > sensu.CheckStateCritical {
+		fmt.Printf("%s CRITICAL: patches %d security %d critical %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit)
+		return sensu.CheckStateCritical, nil
 	} else {
 		//If the file exists, OS is indicating reboot required. Return Warning.
 		//Maybe also return list of packages?
 
 		//fmt.Printf("%s WARNING: %v found.\n", plugin.PluginConfig.Name, plugin.filePath)
-		fmt.Printf("%s WARNING: %s\n", plugin.PluginConfig.Name, checkErr)
-		return sensu.CheckStateWarning, nil
+		fmt.Printf("%s UNKNOWN: %s\n", plugin.PluginConfig.Name, checkErr)
+		return sensu.CheckStateUnknown, nil
 	}
 }
