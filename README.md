@@ -24,6 +24,9 @@ Ubuntu does not have such metadata, and the Apt tools don't provide scalable way
 
 ## Configuration
 
+For checking updates on Redhat/CentOS this check depends on 'yum' and 'yum-security'.
+On Ubuntu Linux it depends on 'apt'.
+
 ### Asset registration
 
 [Sensu Assets][10] are the best way to make use of this plugin. If you're not using an asset, please
