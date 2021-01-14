@@ -24,14 +24,19 @@ func GetLastAccess(path string) (int64, error){
 func TouchLastAccess(path string) (error){
         af, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
         if err != nil {
-                return err
+                return fmt.Errorf("Can not open file for writing %s: %s", path, err)
         }
         defer af.Close()
 
-        af.Truncate(0)
+        // Truncate the file to write the new date
+        err = af.Truncate(0)
+        if err != nil {
+                return fmt.Errorf("Truncate failed on %s: %s\n", path, err)
+        }
+
         _, err = fmt.Fprintf(af, "%s", time.Now().UTC().Format(time.UnixDate))
         if err != nil {
-                return err
+                return fmt.Errorf("Writing time failed: %s\n", err)
         }
 
         return nil
