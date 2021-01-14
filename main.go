@@ -27,15 +27,15 @@ var (
 	}
 
 	options = []*sensu.PluginConfigOption{
-		&sensu.PluginConfigOption{
-			Path:      "file-path",
-			Env:       "FILE_PATH",
-			Argument:  "file-path",
-			Shorthand: "f",
-			Default:   "/var/run/reboot-required",
-			Usage:     "location of file is required.",
-			Value:     &plugin.filePath,
-		},
+//		&sensu.PluginConfigOption{
+//			Path:      "file-path",
+//			Env:       "FILE_PATH",
+//			Argument:  "file-path",
+//			Shorthand: "f",
+//			Default:   "/var/run/reboot-required",
+//			Usage:     "location of file is required.",
+//			Value:     &plugin.filePath,
+//		},
 	}
 )
 
