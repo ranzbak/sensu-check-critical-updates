@@ -14,7 +14,11 @@ import (
 // Config represents the check plugin config.
 type Config struct {
 	sensu.PluginConfig
-	filePath string
+	secCntWarn int
+	secCntCrit int
+	daysSincePatchWarn int
+	daysSincePatchCrit int
+	patchFilePath string
 }
 
 var (
@@ -27,15 +31,51 @@ var (
 	}
 
 	options = []*sensu.PluginConfigOption{
-//		&sensu.PluginConfigOption{
-//			Path:      "file-path",
-//			Env:       "FILE_PATH",
-//			Argument:  "file-path",
-//			Shorthand: "f",
-//			Default:   "/var/run/reboot-required",
-//			Usage:     "location of file is required.",
-//			Value:     &plugin.filePath,
-//		},
+		&sensu.PluginConfigOption{
+			Path:      "sec-cnt-crit",
+			Env:       "SEC_CNT_CRIT",
+			Argument:  "sec-cnt-crit",
+			Shorthand: "s",
+			Default:   5,
+			Usage:     "The number of security patches pending before reporting warning. (-1 to ignore)",
+			Value:     &plugin.secCntCrit,
+		},
+		&sensu.PluginConfigOption{
+			Path:      "sec-cnt-warn",
+			Env:       "SEC_CNT_WARN",
+			Argument:  "sec-cnt-warn",
+			Shorthand: "w",
+			Default:   10,
+			Usage:     "The number of security patches pending before reporting warning. (-1 to ignore)",
+			Value:     &plugin.secCntWarn,
+		},
+		&sensu.PluginConfigOption{
+			Path:      "days-since-patch-warn",
+			Env:       "DAYS-SINCE-PATCH-WARN",
+			Argument:  "days-since-patch-warn",
+			Shorthand: "p",
+			Default:   30,
+			Usage:     "Number of days patches are pending, before starting to report warning.",
+			Value:     &plugin.daysSincePatchWarn,
+		},
+		&sensu.PluginConfigOption{
+			Path:      "days-since-patch-crit",
+			Env:       "DAYS-SINCE-PATCH-CRIT",
+			Argument:  "days-since-patch-crit",
+			Shorthand: "P",
+			Default:   60,
+			Usage:     "Number of days patches are pending, before starting to report critical.",
+			Value:     &plugin.daysSincePatchCrit,
+		},
+		&sensu.PluginConfigOption{
+			Path:      "patch-file-path",
+			Env:       "patch-file-path",
+			Argument:  "patch-file-path",
+			Shorthand: "f",
+			Default:   "/var/tmp/lastNoPending.run",
+			Usage:     "Path to keep the file that is used to check the last time the amount of patches was 0.",
+			Value:     &plugin.patchFilePath,
+		},
 	}
 )
 
@@ -84,22 +124,34 @@ func executeCheck(event *types.Event) (int, error) {
 	var num_sec int
 	var num_crit int
 	if osRelease == "ubuntu" {
-		sev, num_patch,num_sec,num_crit,checkErr = ubuntu.CheckPatch()
+		sev, num_patch,num_sec,num_crit,checkErr = ubuntu.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
 	} else if osId == "rhel" {
-		sev, num_patch,num_sec,num_crit,checkErr = redhat.CheckPatch()
+		sev, num_patch,num_sec,num_crit,checkErr = redhat.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
 	} else {
 		return 0, fmt.Errorf("OS %s not supported", osRelease)
 	}
 
+	// Check if patches have been outstanding for too long
+	patchStat, lastPatch, err := PendingTime(plugin.patchFilePath, num_patch, plugin.daysSincePatchWarn, plugin.daysSincePatchCrit)
+	if err != nil {
+		fmt.Println("Pending file failed:", err)
+		sev = sensu.CheckStateWarning
+	}
+
+	// If the outstanding patches criticality is higher than the security implications use the former
+	if patchStat > sev {
+		sev = patchStat
+	}
+
 	if sev == sensu.CheckStateOK {
 		//File does not exist. OS is NOT indicating reboot required. Return OK
-		fmt.Printf("%s OK: patches %d security %d critical %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit)
+		fmt.Printf("%s OK: patches %d security %d critical %d days %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit, lastPatch)
 		return sensu.CheckStateOK, nil
 	} else if sev == sensu.CheckStateWarning {
-		fmt.Printf("%s WARNING: patches %d security %d critical %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit)
+		fmt.Printf("%s WARNING: patches %d security %d critical %d days %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit, lastPatch)
 		return sensu.CheckStateWarning, nil
 	} else if sev > sensu.CheckStateCritical {
-		fmt.Printf("%s CRITICAL: patches %d security %d critical %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit)
+		fmt.Printf("%s CRITICAL: patches %d security %d critical %d days %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit, lastPatch)
 		return sensu.CheckStateCritical, nil
 	} else {
 		//If the file exists, OS is indicating reboot required. Return Warning.

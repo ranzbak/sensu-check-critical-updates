@@ -15,7 +15,7 @@ const ShellToUse = "bash"
 // checkPatchUbuntu checks if a file exists (...and is not a directory)
 // Borrowed from: https://golangcode.com/check-if-a-file-exists/
 // int: severity, int: total updates, int: security updates, int: critical updates
-func CheckPatch() (int, int, int, int, error) {
+func CheckPatch(secWarn int, secCrit int) (int, int, int, int, error) {
 	// info, err := os.Stat(filename)
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -39,9 +39,9 @@ func CheckPatch() (int, int, int, int, error) {
 	num_crit := strings.Count(stdout.String(), "Critical/Sec.")
 
 	var retState int = sensu.CheckStateOK
-	if num_crit > 0 {
+	if num_crit > secCrit && secCrit != -1 {
 		retState = sensu.CheckStateCritical
-	} else if num_sec > 0 {
+	} else if num_sec > secWarn && secWarn != -1 {
 		retState = sensu.CheckStateWarning
 	}
 	return retState, num_patch, num_sec, num_crit, nil
