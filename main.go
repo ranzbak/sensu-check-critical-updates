@@ -1,10 +1,7 @@
 package main
 
 import (
-	//"bufio"
 	"fmt"
-	//"os"
-	"errors"
 
 	redhat "gitlab.esa.int/esait/sensu-check-critical-updates/redhat"
 	ubuntu "gitlab.esa.int/esait/sensu-check-critical-updates/ubuntu"
@@ -82,7 +79,7 @@ func executeCheck(event *types.Event) (int, error) {
 	}
 
 	var sev int 
-	var checkErr error = nil
+	var checkErr error
 	var num_patch int
 	var num_sec int
 	var num_crit int
