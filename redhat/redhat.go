@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
-	"errors"
 
 	"github.com/sensu-community/sensu-plugin-sdk/sensu"
 )
@@ -29,7 +28,7 @@ func CheckPatch() (int, int, int, int, error) {
 	err := cmd.Run()
 
 	if (err != nil) {
-		return sensu.CheckStateUnknown, 0, 0, 0, errors.New(fmt.Sprintf("Yum failed: %s", err))
+		return sensu.CheckStateUnknown, 0, 0, 0, fmt.Errorf("Yum failed: %s", err)
 	}
 
 	//fmt.Printf("stdout\n%s\n", stdout.String())

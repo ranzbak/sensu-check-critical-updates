@@ -2,7 +2,6 @@ package ubuntu
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"log"
 	"os/exec"
@@ -13,11 +12,6 @@ import (
 
 // Prefered shell for command line execution
 const ShellToUse = "bash"
-
-// The number of to be installed security patches that is counted as a critical
-// This because Ubuntu does not have a system that is usable for checking criticality
-// Of patches on mass without very elaborate infrastructure
-const numSecIsCrit = 10
 
 // checkPatchUbuntu checks if a file exists (...and is not a directory)
 // Borrowed from: https://golangcode.com/check-if-a-file-exists/
@@ -42,7 +36,7 @@ func CheckPatch() (int, int, int, int, error) {
 
 	if (err != nil) {
 		log.Printf("error: %v\n", err)
-		return sensu.CheckStateUnknown, 0, 0, 0, errors.New(fmt.Sprintf("Apt run failed: %s", err))
+		return sensu.CheckStateUnknown, 0, 0, 0, fmt.Errorf("Apt run failed: %s", err)
 	}
 
 	num_patch := strings.Count(stdout.String(), "upgradable from")

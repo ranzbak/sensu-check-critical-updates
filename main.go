@@ -14,9 +14,6 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-// Prefered shell for command line execution
-const ShellToUse = "bash"
-
 // Config represents the check plugin config.
 type Config struct {
 	sensu.PluginConfig
@@ -84,17 +81,17 @@ func executeCheck(event *types.Event) (int, error) {
 		return 0, err
 	}
 
-	var sev int = sensu.CheckStateUnknown
+	var sev int 
 	var checkErr error = nil
-	var num_patch = 0
-	var num_sec = 0
-	var num_crit = 0
+	var num_patch int
+	var num_sec int
+	var num_crit int
 	if osRelease == "ubuntu" {
 		sev, num_patch,num_sec,num_crit,checkErr = ubuntu.CheckPatch()
 	} else if osId == "rhel" {
 		sev, num_patch,num_sec,num_crit,checkErr = redhat.CheckPatch()
 	} else {
-		return 0, errors.New(fmt.Sprintf("OS %s not supported", osRelease))
+		return 0, fmt.Errorf("OS %s not supported", osRelease)
 	}
 
 	if sev == sensu.CheckStateOK {
@@ -111,7 +108,6 @@ func executeCheck(event *types.Event) (int, error) {
 		//If the file exists, OS is indicating reboot required. Return Warning.
 		//Maybe also return list of packages?
 
-		//fmt.Printf("%s WARNING: %v found.\n", plugin.PluginConfig.Name, plugin.filePath)
 		fmt.Printf("%s UNKNOWN: %s\n", plugin.PluginConfig.Name, checkErr)
 		return sensu.CheckStateUnknown, nil
 	}
