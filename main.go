@@ -6,6 +6,7 @@ import (
 	// Check Patches pending
 	redhat  "gitlab.esa.int/esait/sensu-check-critical-updates/redhat"
 	ubuntu  "gitlab.esa.int/esait/sensu-check-critical-updates/ubuntu"
+	centos  "gitlab.esa.int/esait/sensu-check-critical-updates/centos"
 
 	// Check how long the patches are pending
 	pending  "gitlab.esa.int/esait/sensu-check-critical-updates/pendingtime"
@@ -130,9 +131,12 @@ func executeCheck(event *types.Event) (int, error) {
 	var num_crit int
 	if osRelease == "ubuntu" {
 		sev, num_patch,num_sec,num_crit,checkErr = ubuntu.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
-	} else if osId == "rhel" || osId == "centos" {
+	} else if osId == "rhel" {
 		sev, num_patch,num_sec,num_crit,checkErr = redhat.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
-	} else {
+	
+	} else if osId == "centos" {
+		sev, num_patch,num_sec,num_crit,checkErr = centos.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
+	}	else {
 		return 0, fmt.Errorf("OS %s not supported", osRelease)
 	}
 
