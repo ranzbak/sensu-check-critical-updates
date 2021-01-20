@@ -130,7 +130,7 @@ func executeCheck(event *types.Event) (int, error) {
 	var numSec int
 	var numCrit int
 	var numImp int
-	if osID == "ubuntu" {
+	if osID == "ubuntu" || osID == "linuxmint" || osID == "debian" {
 		sev, numPatch, numSec, numImp, numCrit, checkErr = ubuntu.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
 	} else if osID == "rhel" {
 		sev, numPatch, numSec, numImp, numCrit, checkErr = redhat.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
