@@ -155,13 +155,13 @@ func executeCheck(event *types.Event) (int, error) {
 
 	if sev == sensu.CheckStateOK {
 		//File does not exist. OS is NOT indicating reboot required. Return OK
-		fmt.Printf("%s OK: patches %d security %d critical %d important %d days %d.\n", plugin.PluginConfig.Name, numPatch, numSec, numImp, numCrit, lastPatch)
+		fmt.Printf("%s OK: patches %d security %d important %d critical %d days %d.\n", plugin.PluginConfig.Name, numPatch, numSec, numImp, numCrit, lastPatch)
 		return sensu.CheckStateOK, nil
 	} else if sev == sensu.CheckStateWarning {
-		fmt.Printf("%s WARNING: patches %d security %d critical %d important %d days %d.\n", plugin.PluginConfig.Name, numPatch, numSec, numImp, numCrit, lastPatch)
+		fmt.Printf("%s WARNING: patches %d security %d important %d critical %d days %d.\n", plugin.PluginConfig.Name, numPatch, numSec, numImp, numCrit, lastPatch)
 		return sensu.CheckStateWarning, nil
 	} else if sev > sensu.CheckStateCritical {
-		fmt.Printf("%s CRITICAL: patches %d security %d critical %d important %d days %d.\n", plugin.PluginConfig.Name, numPatch, numSec, numImp, numCrit, lastPatch)
+		fmt.Printf("%s CRITICAL: patches %d security %d important %d critical %d days %d.\n", plugin.PluginConfig.Name, numPatch, numSec, numImp, numCrit, lastPatch)
 		return sensu.CheckStateCritical, nil
 	} else {
 		//If the file exists, OS is indicating reboot required. Return Warning.

@@ -17,6 +17,10 @@ func regexToNum(input string, reg string) (int, error) {
 	compRegex := regexp.MustCompile(reg)
 	match := compRegex.FindAllStringSubmatch(input, -1)
 
+	if len(match) == 0 {
+		return 0, nil
+	}
+
 	numStr := match[0][1]
 	retval, err := strconv.Atoi(numStr)
 	if err != nil {
