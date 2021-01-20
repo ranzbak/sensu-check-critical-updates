@@ -4,12 +4,12 @@ import (
 	"fmt"
 
 	// Check Patches pending
-	redhat  "gitlab.esa.int/esait/sensu-check-critical-updates/redhat"
-	ubuntu  "gitlab.esa.int/esait/sensu-check-critical-updates/ubuntu"
-	centos  "gitlab.esa.int/esait/sensu-check-critical-updates/centos"
+	centos "gitlab.esa.int/esait/sensu-check-critical-updates/centos"
+	redhat "gitlab.esa.int/esait/sensu-check-critical-updates/redhat"
+	ubuntu "gitlab.esa.int/esait/sensu-check-critical-updates/ubuntu"
 
 	// Check how long the patches are pending
-	pending  "gitlab.esa.int/esait/sensu-check-critical-updates/pendingtime"
+	pending "gitlab.esa.int/esait/sensu-check-critical-updates/pendingtime"
 
 	// Normal inports
 	"github.com/sensu-community/sensu-plugin-sdk/sensu"
@@ -20,11 +20,11 @@ import (
 // Config represents the check plugin config.
 type Config struct {
 	sensu.PluginConfig
-	secCntWarn int
-	secCntCrit int
+	secCntWarn         int
+	secCntCrit         int
 	daysSincePatchWarn int
 	daysSincePatchCrit int
-	patchFilePath string
+	patchFilePath      string
 }
 
 var (
@@ -98,11 +98,11 @@ func getOSRelease() (string, string, error) {
 		return "", "", err
 	}
 
-	osId := cfg.Section("").Key("ID").String()
+	osID := cfg.Section("").Key("ID").String()
 	osLike := cfg.Section("").Key("ID_LIKE").String()
 	//fmt.Println("OS-LIKE", osLike)
 
-	return osId, osLike, nil
+	return osID, osLike, nil
 }
 
 func checkArgs(event *types.Event) (int, error) {
@@ -118,7 +118,7 @@ func checkArgs(event *types.Event) (int, error) {
 }
 
 func executeCheck(event *types.Event) (int, error) {
-	osId, osRelease, err := getOSRelease()
+	osID, osRelease, err := getOSRelease()
 
 	if err != nil {
 		return 0, err
@@ -126,22 +126,23 @@ func executeCheck(event *types.Event) (int, error) {
 
 	var sev int
 	var checkErr error
-	var num_patch int
-	var num_sec int
-	var num_crit int
+	var numPatch int
+	var numSec int
+	var numCrit int
+	var numImp int
 	if osRelease == "ubuntu" {
-		sev, num_patch,num_sec,num_crit,checkErr = ubuntu.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
-	} else if osId == "rhel" {
-		sev, num_patch,num_sec,num_crit,checkErr = redhat.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
-	
-	} else if osId == "centos" {
-		sev, num_patch,num_sec,num_crit,checkErr = centos.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
-	}	else {
+		sev, numPatch, numSec, numImp, numCrit, checkErr = ubuntu.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
+	} else if osID == "rhel" {
+		sev, numPatch, numSec, numImp, numCrit, checkErr = redhat.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
+
+	} else if osID == "centos" {
+		sev, numPatch, numSec, numImp, numCrit, checkErr = centos.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
+	} else {
 		return 0, fmt.Errorf("OS %s not supported", osRelease)
 	}
 
 	// Check if patches have been outstanding for too long
-	patchStat, lastPatch, err := pending.PendingTime(plugin.patchFilePath, num_patch, plugin.daysSincePatchWarn, plugin.daysSincePatchCrit)
+	patchStat, lastPatch, err := pending.PendingTime(plugin.patchFilePath, numPatch, plugin.daysSincePatchWarn, plugin.daysSincePatchCrit)
 	if err != nil {
 		fmt.Println("Pending file failed:", err)
 		sev = sensu.CheckStateWarning
@@ -154,13 +155,13 @@ func executeCheck(event *types.Event) (int, error) {
 
 	if sev == sensu.CheckStateOK {
 		//File does not exist. OS is NOT indicating reboot required. Return OK
-		fmt.Printf("%s OK: patches %d security %d critical %d days %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit, lastPatch)
+		fmt.Printf("%s OK: patches %d security %d critical %d important %d days %d.\n", plugin.PluginConfig.Name, numPatch, numSec, numImp, numCrit, lastPatch)
 		return sensu.CheckStateOK, nil
 	} else if sev == sensu.CheckStateWarning {
-		fmt.Printf("%s WARNING: patches %d security %d critical %d days %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit, lastPatch)
+		fmt.Printf("%s WARNING: patches %d security %d critical %d important %d days %d.\n", plugin.PluginConfig.Name, numPatch, numSec, numImp, numCrit, lastPatch)
 		return sensu.CheckStateWarning, nil
 	} else if sev > sensu.CheckStateCritical {
-		fmt.Printf("%s CRITICAL: patches %d security %d critical %d days %d.\n", plugin.PluginConfig.Name, num_patch, num_sec, num_crit, lastPatch)
+		fmt.Printf("%s CRITICAL: patches %d security %d critical %d important %d days %d.\n", plugin.PluginConfig.Name, numPatch, numSec, numImp, numCrit, lastPatch)
 		return sensu.CheckStateCritical, nil
 	} else {
 		//If the file exists, OS is indicating reboot required. Return Warning.
