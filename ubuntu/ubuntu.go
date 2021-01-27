@@ -11,7 +11,7 @@ import (
 )
 
 // ShellToUse Prefered shell for command line execution
-const ShellToUse = "bash"
+const ShellToUse = "/bin/bash"
 
 // CheckPatch checks if a file exists (...and is not a directory)
 // Borrowed from: https://golangcode.com/check-if-a-file-exists/
@@ -41,9 +41,7 @@ func CheckPatch(secWarn int, secCrit int) (int, int, int, int, int, error) {
 	// Poor mans monitoring
 	// This is because Ubuntu security reporting over patches is useless
 	var retState int = sensu.CheckStateOK
-	if numSec > secCrit && secCrit != -1 {
-		retState = sensu.CheckStateCritical
-	} else if numSec > secWarn && secCrit != -1 {
+	if numSec > secWarn {
 		retState = sensu.CheckStateWarning
 	}
 

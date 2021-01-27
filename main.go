@@ -160,14 +160,14 @@ func executeCheck(event *types.Event) (int, error) {
 	} else if sev == sensu.CheckStateWarning {
 		fmt.Printf("%s WARNING: patches %d security %d important %d critical %d days %d.\n", plugin.PluginConfig.Name, numPatch, numSec, numImp, numCrit, lastPatch)
 		return sensu.CheckStateWarning, nil
-	} else if sev > sensu.CheckStateCritical {
+	} else if sev == sensu.CheckStateCritical {
 		fmt.Printf("%s CRITICAL: patches %d security %d important %d critical %d days %d.\n", plugin.PluginConfig.Name, numPatch, numSec, numImp, numCrit, lastPatch)
 		return sensu.CheckStateCritical, nil
 	} else {
 		//If the file exists, OS is indicating reboot required. Return Warning.
 		//Maybe also return list of packages?
 
-		fmt.Printf("%s UNKNOWN: %s\n", plugin.PluginConfig.Name, checkErr)
+		fmt.Printf("%s UNKNOWN: %s %d\n", plugin.PluginConfig.Name, checkErr, sev)
 		return sensu.CheckStateUnknown, nil
 	}
 }
