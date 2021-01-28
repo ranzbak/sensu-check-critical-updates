@@ -21,7 +21,7 @@ func CheckPatch(secWarn int, secCrit int) (int, int, int, int, int, error) {
 	var stderr bytes.Buffer
 
 	// app := "/bin/yum info-sec|grep  'Critical:'"
-	app := "yum  list updates -C -q | grep -v 'Updated Packages'"
+    app := "yum  list updates -C -q"
 	cmd := exec.Command(ShellToUse, "-c", app)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -31,10 +31,7 @@ func CheckPatch(secWarn int, secCrit int) (int, int, int, int, int, error) {
 		return sensu.CheckStateUnknown, 0, 0, 0, 0, fmt.Errorf("Yum failed: %s", err)
 	}
 
-	//fmt.Printf("stdout\n%s\n", stdout.String())
-	//fmt.Printf("stderr\n%s\n", stderr.String())
-
-	num_patch := strings.Count(stdout.String(), "\n")
+	num_patch := strings.Count(stdout.String(), "Updated Packages")
 	num_sec := 0 // No security information in CentOS :-(
 	num_crit := 0
 	num_imp := 0
