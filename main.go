@@ -92,17 +92,18 @@ func main() {
 
 // Retrieve the OS family of the current Linux distribution
 // Returns: string: ID, string: ID_LIKE, error
-func getOSRelease() (string, string, error) {
+func getOSRelease() (string, string, string, error) {
 	cfg, err := ini.Load("/etc/os-release")
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 
 	osID := cfg.Section("").Key("ID").String()
 	osLike := cfg.Section("").Key("ID_LIKE").String()
+	osVerID := cfg.Section("").Key("VERSION_ID").String()
 	//fmt.Println("OS-LIKE", osLike)
 
-	return osID, osLike, nil
+	return osID, osLike, osVerID, nil
 }
 
 func checkArgs(event *types.Event) (int, error) {
@@ -118,7 +119,7 @@ func checkArgs(event *types.Event) (int, error) {
 }
 
 func executeCheck(event *types.Event) (int, error) {
-	osID, osRelease, err := getOSRelease()
+	osID, osRelease, osVersion, err := getOSRelease()
 
 	if err != nil {
 		return 0, err
@@ -135,6 +136,8 @@ func executeCheck(event *types.Event) (int, error) {
 	} else if osID == "rhel" {
 		sev, numPatch, numSec, numImp, numCrit, checkErr = redhat.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
 
+	} else if osID == "centos" && osVersion == "7" {
+		sev, numPatch, numSec, numImp, numCrit, checkErr = redhat.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
 	} else if osID == "centos" {
 		sev, numPatch, numSec, numImp, numCrit, checkErr = centos.CheckPatch(plugin.secCntWarn, plugin.secCntCrit)
 	} else {
